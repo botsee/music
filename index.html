@@ -1,189 +1,116 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎧 Zene Kvíz</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎧 Zene Kvíz</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-      background: #0f0f0f;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 420px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    .categories button,
-    .controls button {
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      font-size: 16px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      background: #1db954;
-      color: #000;
-      font-weight: bold;
-    }
-
-    .controls button.secondary {
-      background: #222;
-      color: #fff;
-    }
-
-    .card {
-      background: #181818;
-      border-radius: 16px;
-      padding: 30px 20px;
-      margin-bottom: 20px;
-      min-height: 120px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 22px;
-    }
-
-    .info {
-      display: none;
-      line-height: 1.6;
-      font-size: 18px;
-    }
-
-    .hidden {
-      display: none;
-    }
-  </style>
+<style>
+body {
+  margin: 0;
+  background: #0f0f0f;
+  color: white;
+  font-family: system-ui, -apple-system;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.app {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  text-align: center;
+}
+button {
+  width: 100%;
+  padding: 14px;
+  margin: 8px 0;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+}
+.primary { background: #1db954; color: black; }
+.secondary { background: #222; color: white; }
+.card {
+  background: #181818;
+  border-radius: 16px;
+  padding: 30px;
+  margin: 20px 0;
+  font-size: 22px;
+}
+.hidden { display: none; }
+</style>
 </head>
 
 <body>
-  <div class="app">
+<div class="app">
 
-    <!-- CATEGORY SCREEN -->
-    <div id="categoryScreen">
-      <h1>🎶 Válassz kategóriát</h1>
-      <div class="categories">
-        <button onclick="selectCategory('rock')">🎸 Rock slágerek</button>
-        <button onclick="selectCategory('magyar')">🇭🇺 Magyar retro</button>
-        <button onclick="selectCategory('pop')">💃 Pop slágerek</button>
-      </div>
-    </div>
+<div id="category">
+  <h1>🎶 Kategória</h1>
+  <button class="primary" onclick="start('rock')">🎸 Rock</button>
+</div>
 
-    <!-- GAME SCREEN -->
-    <div id="gameScreen" class="hidden">
-      <h1>🎧 Találd ki a zenét</h1>
+<div id="game" class="hidden">
+  <h1>🎧 Találd ki</h1>
+  <div class="card" id="card">❓ ❓ ❓</div>
 
-      <div class="card">
-        <div id="placeholder">❓ ❓ ❓</div>
-        <div id="info" class="info"></div>
-      </div>
+  <button class="primary" onclick="play()">▶ PLAY</button>
+  <button class="secondary" onclick="replay()">⟲ REPLAY</button>
+  <button class="secondary" onclick="reveal()">👁 REVEAL</button>
+  <button class="primary" onclick="next()">⏭ NEXT</button>
 
-      <div class="controls">
-        <button onclick="playSong()">▶ PLAY</button>
-        <button class="secondary" onclick="replaySong()">⟲ REPLAY</button>
-        <button class="secondary" onclick="reveal()">👁 REVEAL</button>
-        <button onclick="nextSong()">⏭ NEXT SONG</button>
-      </div>
-    </div>
+  <!-- EZ A KULCS -->
+  <audio id="player" playsinline></audio>
+</div>
 
-  </div>
+</div>
 
-  <script>
-    const categories = {
-      rock: [
-        {
-          artist: "Queen",
-          title: "Bohemian Rhapsody",
-          year: 1975,
-          preview: "https://p.scdn.co/mp3-preview/6a8c0a5c1f4e4b6e8c7c1a07b2a2a4f06b4c6f0a"
-        },
-        {
-          artist: "AC/DC",
-          title: "Back In Black",
-          year: 1980,
-          preview: "https://p.scdn.co/mp3-preview/0c9a7c0c2f1d93d3536bc3a1e9bdfb1ef82b1f7d"
-        }
-      ],
-      magyar: [
-        {
-          artist: "Omega",
-          title: "Gyöngyhajú lány",
-          year: 1969,
-          preview: "https://p.scdn.co/mp3-preview/2a8d4f7c69f08b07b0d9b9c8b9a0d9a9c2d8a3f6"
-        }
-      ],
-      pop: [
-        {
-          artist: "Michael Jackson",
-          title: "Billie Jean",
-          year: 1982,
-          preview: "preview: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-"
-        }
-      ]
-    };
+<script>
+const songs = {
+  rock: [{
+    artist: "Queen",
+    title: "Bohemian Rhapsody",
+    year: 1975,
+    preview: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+  }]
+};
 
-    let currentCategory = null;
-    let currentSong = null;
-    let audio = new Audio();
+let list = [];
+let current = null;
+const player = document.getElementById("player");
 
-    function selectCategory(cat) {
-      currentCategory = categories[cat];
-      document.getElementById("categoryScreen").classList.add("hidden");
-      document.getElementById("gameScreen").classList.remove("hidden");
-      nextSong();
-    }
+function start(cat) {
+  list = songs[cat];
+  document.getElementById("category").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  next();
+}
 
-    function randomSong() {
-      return currentCategory[Math.floor(Math.random() * currentCategory.length)];
-    }
+function next() {
+  player.pause();
+  current = list[Math.floor(Math.random() * list.length)];
+  document.getElementById("card").innerText = "❓ ❓ ❓";
+}
 
-    function nextSong() {
-      audio.pause();
-      audio.currentTime = 0;
+function play() {
+  player.src = current.preview;
+  player.play();
+}
 
-      currentSong = randomSong();
-      audio.src = currentSong.preview;
+function replay() {
+  player.currentTime = 0;
+  player.play();
+}
 
-      document.getElementById("info").style.display = "none";
-      document.getElementById("placeholder").style.display = "block";
-    }
-
-    function playSong() {
-      audio.play();
-    }
-
-    function replaySong() {
-      audio.currentTime = 0;
-      audio.play();
-    }
-
-    function reveal() {
-      const info = document.getElementById("info");
-      info.innerHTML = `
-        🎤 <strong>${currentSong.artist}</strong><br/>
-        🎵 ${currentSong.title}<br/>
-        📅 ${currentSong.year}
-      `;
-      info.style.display = "block";
-      document.getElementById("placeholder").style.display = "none";
-    }
-  </script>
+function reveal() {
+  document.getElementById("card").innerHTML =
+    `🎤 <b>${current.artist}</b><br>
+     🎵 ${current.title}<br>
+     📅 ${current.year}`;
+}
+</script>
 
 </body>
 </html>
